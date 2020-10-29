@@ -13,3 +13,5 @@ CatBot - это бот для Telegram, который присылает пол
 API_KEY = "Ваш ключ"
 USER_EMOJI = [':smiley_cat:', ':smiling_imp:', ':panda_face:', ':dog:']
 ...
+
+6. Запустите бота `python bot.py`

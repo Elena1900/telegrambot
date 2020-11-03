@@ -1,8 +1,9 @@
 from glob import glob
 import logging
+import os
 from random import choice
 
-from utils import get_smile, play_random_numbers, main_keyboard
+from utils import get_smile, is_cat, play_random_numbers, main_keyboard
 
 
 def greet_user(update, context):
@@ -51,3 +52,18 @@ def user_coordinates(update, context):
         f"Ваши координаты {coords} {context.user_data['emoji']}!",
         reply_markup=main_keyboard()
     )    
+
+def check_user_photo(update, context):
+    update.message.reply_text("Обрабатываем фотографии")
+    os.makedirs("downloads", exist_ok=True)
+    user_photo = context.bot.getFile(update.message.photo[-1].file_id)
+    file_name = os.path.join("downloads", f"{user_photo.file_id}.jpg")
+    user_photo.download(file_name)  
+    if is_cat(file_name):
+        update.message.reply_text("Обнаружен котик, добавляю в библиотеку.")
+        new_filename = os.path.join("images", f"{user_photo.file_id}_cat.jpg")
+        os.rename(file_name, new_filename)
+    else:
+        os.remove(file_name)
+        update.message.reply_text("Котик не обнаружен!")    
+

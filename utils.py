@@ -1,3 +1,4 @@
+from clarifai.rest import ClarifaiApp
 from emoji import emojize
 from random import randint, choice
 
@@ -29,3 +30,19 @@ def play_random_numbers(user_number):
 
 def main_keyboard():
     return ReplyKeyboardMarkup([['Прислать котика', KeyboardButton('Мои координаты', request_location=True)]])
+
+
+def is_cat(file_name):
+    image_has_cat = False
+    app = ClarifaiApp(api_key=settings.CLARIFAI_API_KEY)
+    model = app.public_models.general_model
+    response = model.predict_by_filename(file_name, max_concepts=5)
+    if response['status']['code'] == 10000:
+        for concept in response['outputs'][0]['data']['concepts']:
+            if concept['name'] == 'cat':
+                image_has_cat = True
+    return image_has_cat
+
+
+if __name__ == "__main__":
+    print(is_cat('images/big_cat.jpg'))   

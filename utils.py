@@ -29,7 +29,9 @@ def play_random_numbers(user_number):
        
 
 def main_keyboard():
-    return ReplyKeyboardMarkup([['Прислать котика', KeyboardButton('Мои координаты', request_location=True)]])
+    return ReplyKeyboardMarkup([
+        ['Прислать котика', KeyboardButton('Мои координаты', request_location=True), 'Заполнить анкету']
+        ])
 
 
 def is_cat(file_name):

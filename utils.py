@@ -1,18 +1,9 @@
 from clarifai.rest import ClarifaiApp
-from emoji import emojize
 from random import randint, choice
 
 from telegram import ReplyKeyboardMarkup, KeyboardButton
 
 import settings
-
-
-def get_smile(user_data):
-    if 'emoji' not in user_data:
-        smile = choice(settings.USER_EMOJI)
-        return emojize(smile, use_aliases=True)
-    return user_data['emoji']    
-
 
     
 

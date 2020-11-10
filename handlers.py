@@ -3,25 +3,26 @@ import logging
 import os
 from random import choice
 
-from utils import get_smile, is_cat, play_random_numbers, main_keyboard
+from db import db, get_or_create_user
+from utils import  is_cat, play_random_numbers, main_keyboard
 
 
 def greet_user(update, context):
+    user = get_or_create_user(db, update.effective_user, update.message.chat.id)
     text = 'Вызван /start'
     logging.info(text)
-    context.user_data['emoji'] = get_smile(context.user_data)
     update.message.reply_text(
-        f"Здравствуй, пользователь {context.user_data['emoji']}!",
+        f"Здравствуй, пользователь {user['emoji']}!",
         reply_markup=main_keyboard()
         )
 
 
 def talk_to_me(update, context):
-    context.user_data['emoji'] = get_smile(context.user_data)
+    user = get_or_create_user(db, update.effective_user, update.message.chat.id)
     user_text = "Привет {}! Ты написал: {}".format(update.message.chat.first_name, update.message.text)
     logging.info("User: %s, Chat id: %s, Message: %s", update.message.chat.username,
                 update.message.chat.id, update.message.text)
-    update.message.reply_text(f"{user_text} {context.user_data['emoji']}", reply_markup=main_keyboard())        
+    update.message.reply_text(f"{user_text} {user['emoji']}", reply_markup=main_keyboard())        
 
 
 def guess_number(update, context):
@@ -46,10 +47,10 @@ def send_cat_picture(update, context):
 
 
 def user_coordinates(update, context):
-    context.user_data['emoji'] = get_smile(context.user_data)
+    user = get_or_create_user(db, update.effective_user, update.message.chat.id)
     coords = update.message.location
     update.message.reply_text(
-        f"Ваши координаты {coords} {context.user_data['emoji']}!",
+        f"Ваши координаты {coords} {user['emoji']}!",
         reply_markup=main_keyboard()
     )    
 

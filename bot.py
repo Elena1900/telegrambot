@@ -27,14 +27,13 @@ def main():
             "rating": [MessageHandler(Filters.regex('^(1|2|3|4|5)$'), anketa_rating)],
             "comment":[
                 CommandHandler('skip', anketa_skip),
-                MessageHandler(
-                                Filters.text | Filters.video | Filters.photo | Filters.document | Filters.location,
-                                anketa_dontknow
-                 )
+                MessageHandler( Filters.text, anketa_comment)
             ]
         },
         fallbacks=[
-            MessageHandler(Filters.text, anketa_dontknow)
+            MessageHandler(
+                Filters.text | Filters.video | Filters.photo | Filters.document | Filters.location, anketa_dontknow
+                )
         ]
     )
 

@@ -3,8 +3,9 @@ import logging
 import os
 from random import choice
 
-from db import db, get_or_create_user
-from utils import  is_cat, play_random_numbers, main_keyboard
+from db import db, get_or_create_user, subscribe_user, unsubscribe_user
+from utils import is_cat, play_random_numbers, main_keyboard
+from jobs import alarm
 
 
 def greet_user(update, context):
@@ -21,8 +22,8 @@ def talk_to_me(update, context):
     user = get_or_create_user(db, update.effective_user, update.message.chat.id)
     user_text = "Привет {}! Ты написал: {}".format(update.message.chat.first_name, update.message.text)
     logging.info("User: %s, Chat id: %s, Message: %s", update.message.chat.username,
-                update.message.chat.id, update.message.text)
-    update.message.reply_text(f"{user_text} {user['emoji']}", reply_markup=main_keyboard())        
+                 update.message.chat.id, update.message.text)
+    update.message.reply_text(f"{user_text} {user['emoji']}", reply_markup=main_keyboard())   
 
 
 def guess_number(update, context):
@@ -36,14 +37,15 @@ def guess_number(update, context):
     else:
         message = "Введите целое число"
 
-    update.message.reply_text(message, reply_markup=main_keyboard()) 
+    update.message.reply_text(message, reply_markup=main_keyboard())
 
 
 def send_cat_picture(update, context):
     cat_photos_list = glob('images/*cat.jpg')
     cat_pic_filename = choice(cat_photos_list)
     chat_id = update.effective_chat.id
-    context.bot.send_photo(chat_id=chat_id, photo=open(cat_pic_filename, 'rb'), reply_markup=main_keyboard())  
+    context.bot.send_photo(chat_id=chat_id, photo=open(cat_pic_filename, 'rb'),
+                           reply_markup=main_keyboard())
 
 
 def user_coordinates(update, context):
@@ -52,19 +54,40 @@ def user_coordinates(update, context):
     update.message.reply_text(
         f"Ваши координаты {coords} {user['emoji']}!",
         reply_markup=main_keyboard()
-    )    
+    )
+
 
 def check_user_photo(update, context):
     update.message.reply_text("Обрабатываем фотографии")
     os.makedirs("downloads", exist_ok=True)
     user_photo = context.bot.getFile(update.message.photo[-1].file_id)
     file_name = os.path.join("downloads", f"{user_photo.file_id}.jpg")
-    user_photo.download(file_name)  
+    user_photo.download(file_name)
     if is_cat(file_name):
         update.message.reply_text("Обнаружен котик, добавляю в библиотеку.")
         new_filename = os.path.join("images", f"{user_photo.file_id}_cat.jpg")
         os.rename(file_name, new_filename)
     else:
         os.remove(file_name)
-        update.message.reply_text("Котик не обнаружен!")    
+        update.message.reply_text("Котик не обнаружен!")
 
+
+def subscribe(update, context):
+    user = get_or_create_user(db, update.effective_user, update.message.chat.id)
+    subscribe_user(db, user)
+    update.message.reply_text("Вы успешно подписались")
+
+
+def unsubscribe(update, context):
+    user = get_or_create_user(db, update.effective_user, update.message.chat.id)
+    unsubscribe_user(db, user)
+    update.message.reply_text("Вы успешно отписались")
+
+
+def set_alarm(update, context):
+    try:
+        alarm_seconds = abs(int(context.args[0]))
+        context.job_queue.run_once(alarm, alarm_seconds, context=update.message.chat.id)
+        update.message.reply_text(f"Уведомление через {alarm_seconds} секунд")
+    except(ValueError, TypeError):
+        update.message.reply_text("Введите целое число секунд после команды")

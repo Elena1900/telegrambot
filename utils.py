@@ -1,11 +1,10 @@
 from clarifai.rest import ClarifaiApp
-from random import randint, choice
+from random import randint
 
 from telegram import ReplyKeyboardMarkup, KeyboardButton
 
 import settings
 
-    
 
 def play_random_numbers(user_number):
     bot_number = randint(user_number - 10, user_number + 10)
@@ -17,7 +16,6 @@ def play_random_numbers(user_number):
         message = f"Ваше число {user_number}, моё {bot_number}, вы проиграли"   
     return message
 
-       
 
 def main_keyboard():
     return ReplyKeyboardMarkup([
@@ -38,4 +36,5 @@ def is_cat(file_name):
 
 
 if __name__ == "__main__":
-    print(is_cat('images/big_cat.jpg'))   
+    print(is_cat('images/big_cat.jpg'))
+

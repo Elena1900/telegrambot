@@ -3,6 +3,7 @@ from telegram.ext import ConversationHandler
 from db import db, get_or_create_user, save_anketa
 from utils import main_keyboard
 
+
 def anketa_start(update, context):
     update.message.reply_text(
         "Привет, как вас зовут?",
@@ -31,6 +32,7 @@ def anketa_rating(update, context):
     update.message.reply_text("Напишите комментарий, или нажмите /skip чтобы пропустить")
     return "comment"
 
+
 def anketa_comment(update, context):
     context.user_data["anketa"]["comment"] = update.message.text
     user = get_or_create_user(db, update.effective_user, update.message.chat.id)
@@ -38,7 +40,7 @@ def anketa_comment(update, context):
     user_text = format_anketa(context.user_data["anketa"])
 
     update.message.reply_text(user_text, reply_markup=main_keyboard(),
-                                parse_mode=ParseMode.HTML)
+                              parse_mode=ParseMode.HTML)
     return ConversationHandler.END
 
 
@@ -46,19 +48,18 @@ def anketa_skip(update, context):
     user_text = format_anketa(context.user_data['anketa'])
     user = get_or_create_user(db, update.effective_user, update.message.chat.id)
     save_anketa(db, user['user_id'], context.user_data['anketa'])
-    update.message.reply_text(user_text, reply_markup=main_keyboard(), parse_mode=ParseMode.HTML)
+    update.message.reply_text(user_text, reply_markup=main_keyboard(),
+                              parse_mode=ParseMode.HTML)
     return ConversationHandler.END
+
 
 def format_anketa(user_anketa):
     user_text = f"""<b>Имя Фамилия:</b> {user_anketa['name']}
 <b>Оценка:</b> {user_anketa['rating']}"""
     if user_anketa.get('comment'):
         user_text += f"\n<b>Комментарий:</b> {user_anketa['comment']}"
- 
-    return user_text   
+    return user_text
+
 
 def anketa_dontknow(update, context):
-    update.message.reply_text("Я вас не понимаю")    
-
-
-
+    update.message.reply_text("Я вас не понимаю")

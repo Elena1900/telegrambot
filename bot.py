@@ -1,6 +1,7 @@
-from daytime import time
+from datetime import time
 import logging
 import pytz
+
 
 from telegram.bot import Bot
 from telegram.ext import (Updater, CommandHandler, ConversationHandler,
@@ -12,7 +13,7 @@ from anketa import (anketa_comment, anketa_start, anketa_name, anketa_rating,
 from handlers import (greet_user, guess_number, check_user_photo,
                       send_cat_picture, subscribe, set_alarm, talk_to_me,
                       user_coordinates, unsubscribe)
-from jobs import send_updates
+from jobs import send_updates, send_hello
 import settings
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s',
@@ -43,13 +44,14 @@ def main():
 
     bot = MQBot(settings.API_KEY, request=request)
     mybot = Updater(bot=bot, use_context=True)
-
+ 
     logging.info('Бот стартовал')
 
     jq = mybot.job_queue
-    target_time = time(12, 0, tzinfo=pytz.timezone("Europe/Amsterdam"))
+    target_time = time(15, 45, tzinfo=pytz.timezone("Europe/Amsterdam"))
     target_days = (Days.MON, Days.WED, Days.FRI)
     jq.run_daily(send_updates, target_time, target_days)
+    # jq.run_repeating(send_updates, interval=5)
 
     dp = mybot.dispatcher
 
@@ -93,4 +95,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()  
+    main()

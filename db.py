@@ -55,4 +55,4 @@ def unsubscribe_user(db, user_data):
 
 
 def get_subscribed(db):
-    return db.users.find({"subscribed": True})
+    return db.users.find({"subsribed": True})

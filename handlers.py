@@ -3,8 +3,8 @@ import logging
 import os
 from random import choice
 
-from db import db, get_or_create_user, subscribe_user, unsubscribe_user
-from utils import is_cat, play_random_numbers, main_keyboard
+from db import db, get_or_create_user, subscribe_user, unsubscribe_user, save_cat_image_vote, user_voted, get_image_rating
+from utils import is_cat, play_random_numbers, main_keyboard, cat_rating_inline_keyboard
 from jobs import alarm
 
 
@@ -33,7 +33,7 @@ def guess_number(update, context):
             user_number = int(context.args[0])
             message = play_random_numbers(user_number)
         except(TypeError, ValueError):
-            message = "Введите целое число"   
+            message = "Введите целое число" 
     else:
         message = "Введите целое число"
 
@@ -41,11 +41,19 @@ def guess_number(update, context):
 
 
 def send_cat_picture(update, context):
+    user = get_or_create_user(db, update.effective_user, update.message.chat.id)
     cat_photos_list = glob('images/*cat.jpg')
     cat_pic_filename = choice(cat_photos_list)
     chat_id = update.effective_chat.id
+    if user_voted(db, cat_pic_filename, user["user_id"]):
+        rating = get_image_rating(db, cat_pic_filename)
+        keyboard = None
+        caption = f"Рейтинг картинки {rating}"
+    else:
+        keyboard = cat_rating_inline_keyboard(cat_pic_filename)
+        caption = None 
     context.bot.send_photo(chat_id=chat_id, photo=open(cat_pic_filename, 'rb'),
-                           reply_markup=main_keyboard())
+                           reply_markup=keyboard, caption=caption)
 
 
 def user_coordinates(update, context):
@@ -91,3 +99,13 @@ def set_alarm(update, context):
         update.message.reply_text(f"Уведомление через {alarm_seconds} секунд")
     except(ValueError, TypeError):
         update.message.reply_text("Введите целое число секунд после команды")
+
+
+def cat_picture_rating(update, context):
+    update.callback_query.answer()
+    callback_type, image_name, vote = update.callback_query.data.split("|")
+    vote = int(vote)
+    user = get_or_create_user(db, update.effective_user, update.effective_chat.id)
+    save_cat_image_vote(db, user, image_name, vote)
+    rating = get_image_rating(db, image_name)
+    update.callback_query.edit_message_caption(caption=f"Рейтинг картинки {rating}")

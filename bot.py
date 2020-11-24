@@ -5,15 +5,16 @@ import pytz
 
 from telegram.bot import Bot
 from telegram.ext import (Updater, CommandHandler, ConversationHandler,
-                          Filters, MessageHandler, messagequeue as mq)
+                          Filters, MessageHandler, messagequeue as mq,
+                          CallbackQueryHandler)
 from telegram.ext.jobqueue import Days
 from telegram.utils.request import Request
 from anketa import (anketa_comment, anketa_start, anketa_name, anketa_rating,
                     anketa_skip, anketa_dontknow)
-from handlers import (greet_user, guess_number, check_user_photo,
+from handlers import (greet_user, guess_number, check_user_photo, cat_picture_rating,
                       send_cat_picture, subscribe, set_alarm, talk_to_me,
                       user_coordinates, unsubscribe)
-from jobs import send_updates, send_hello
+from jobs import send_updates
 import settings
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s',
@@ -44,7 +45,7 @@ def main():
 
     bot = MQBot(settings.API_KEY, request=request)
     mybot = Updater(bot=bot, use_context=True)
- 
+
     logging.info('Бот стартовал')
 
     jq = mybot.job_queue
@@ -83,6 +84,7 @@ def main():
     dp.add_handler(CommandHandler('subscribe', subscribe))
     dp.add_handler(CommandHandler('unsubscribe', unsubscribe))
     dp.add_handler(CommandHandler('alarm', set_alarm))
+    dp.add_handler(CallbackQueryHandler(cat_picture_rating, pattern="^(rate|)"))
     dp.add_handler(MessageHandler(Filters.regex('^(Прислать котика)$'),
                                   send_cat_picture))
     dp.add_handler(MessageHandler(Filters.photo, check_user_photo))
